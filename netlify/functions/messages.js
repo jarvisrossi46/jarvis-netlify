@@ -5,10 +5,8 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Valid users
 const VALID_USERS = ['arry', 'ashwin', 'nakul'];
 
-// Agent routing
 const AGENT_ROUTING = {
     'arry': 'all',
     'ashwin': 'vector',
@@ -26,18 +24,12 @@ exports.handler = async (event, context) => {
         return { statusCode: 200, headers };
     }
 
-    // Auth check
     const user = event.headers['x-user'] || event.queryStringParameters?.sender;
     if (!user || !VALID_USERS.includes(user)) {
-        return { 
-            statusCode: 401, 
-            headers, 
-            body: JSON.stringify({ error: 'Unauthorized' }) 
-        };
+        return { statusCode: 401, headers, body: JSON.stringify({ error: 'Unauthorized' }) };
     }
 
     if (event.httpMethod === 'GET') {
-        // Get messages for this user only (siloed)
         const since = parseInt(event.queryStringParameters?.since) || 0;
         
         const { data, error } = await supabase
@@ -53,18 +45,36 @@ exports.handler = async (event, context) => {
 
     if (event.httpMethod === 'POST') {
         const body = JSON.parse(event.body);
-        const { sender, content, agent } = body;
+        const { sender, content, agent, attachment, attachment_name, attachment_type } = body;
         
-        // Verify sender matches auth
         if (sender !== user) {
-            return { 
-                statusCode: 403, 
-                headers, 
-                body: JSON.stringify({ error: 'Sender mismatch' }) 
-            };
+            return { statusCode: 403, headers, body: JSON.stringify({ error: 'Sender mismatch' }) };
         }
         
         const assignedAgent = agent || AGENT_ROUTING[user];
+        
+        // Handle file upload if present
+        let attachmentUrl = null;
+        if (attachment && attachment_name) {
+            // Extract base64 data
+            const base64Data = attachment.split(',')[1];
+            const buffer = Buffer.from(base64Data, 'base64');
+            
+            // Upload to Supabase Storage
+            const filePath = `${sender}/${Date.now()}_${attachment_name}`;
+            const { data: uploadData, error: uploadError } = await supabase
+                .storage
+                .from('attachments')
+                .upload(filePath, buffer, { contentType: attachment_type });
+            
+            if (!uploadError) {
+                const { data: urlData } = supabase
+                    .storage
+                    .from('attachments')
+                    .getPublicUrl(filePath);
+                attachmentUrl = urlData.publicUrl;
+            }
+        }
         
         // Store message
         const { data, error } = await supabase
@@ -73,18 +83,24 @@ exports.handler = async (event, context) => {
                 sender, 
                 content, 
                 type: 'incoming',
-                recipient: assignedAgent === 'all' ? 'jarvis' : assignedAgent
+                recipient: assignedAgent === 'all' ? 'jarvis' : assignedAgent,
+                attachment_url: attachmentUrl,
+                attachment_name: attachment_name,
+                attachment_type: attachment_type
             }])
             .select()
             .single();
         
         if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
         
-        // Send WhatsApp with agent routing info
+        // Send WhatsApp
         try {
             const agentLabel = assignedAgent === 'all' ? 'Jarvis' : 
                               assignedAgent === 'vector' ? 'Vector' : 'Staq';
-            const formattedMessage = `[${sender.toUpperCase()} → ${agentLabel}] ${content}`;
+            let formattedMessage = `[${sender.toUpperCase()} → ${agentLabel}] ${content}`;
+            if (attachment_name) {
+                formattedMessage += ` [+${attachment_name}]`;
+            }
             
             await fetch('http://100.112.231.84:8081/webhook/notify', {
                 method: 'POST',
@@ -92,7 +108,8 @@ exports.handler = async (event, context) => {
                 body: JSON.stringify({ 
                     sender, 
                     content: formattedMessage,
-                    agent: assignedAgent
+                    agent: assignedAgent,
+                    hasAttachment: !!attachmentUrl
                 })
             });
         } catch (e) {
