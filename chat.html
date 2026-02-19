@@ -311,12 +311,16 @@
         
         async function loadMessages() {
             try {
+                console.log('Fetching messages since:', lastId);
                 const res = await fetch(`${API_URL}/messages?since=${lastId}&sender=${currentUser}`, {
                     headers: { 'X-User': currentUser }
                 });
+                console.log('Response status:', res.status);
                 const messages = await res.json();
+                console.log('Messages received:', messages.length, messages);
                 
                 if (messages.length > 0) {
+                    console.log('Processing', messages.length, 'messages');
                     const container = document.getElementById('messages');
                     const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
                     
