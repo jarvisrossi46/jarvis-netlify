@@ -283,7 +283,12 @@
         const currentUser = sessionStorage.getItem('jarvis_user');
         const userAgent = sessionStorage.getItem('jarvis_agent');
         
-        if (!currentUser) window.location.href = 'index.html';
+        console.log('Auth check:', { currentUser, userAgent });
+        
+        if (!currentUser) {
+            console.log('Not logged in, redirecting...');
+            window.location.href = 'index.html';
+        }
         
         const AGENT_NAMES = {
             'all': 'Staq & Vector',
@@ -470,9 +475,12 @@
             if (!content && !selectedFile) return;
             
             const btn = document.getElementById('sendBtn');
+            const originalText = btn.textContent;
+            btn.textContent = '...';
             btn.disabled = true;
             
             try {
+                console.log('Sending message:', content);
                 let attachmentData = null;
                 
                 if (selectedFile) {
@@ -483,7 +491,7 @@
                     });
                 }
                 
-                await fetch(`${API_URL}/messages`, {
+                const response = await fetch(`${API_URL}/messages`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -499,12 +507,25 @@
                     })
                 });
                 
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Message sent:', data);
+                
                 input.value = '';
                 clearFile();
-                loadMessages();
+                await loadMessages();
+                
             } catch (e) {
-                alert('Failed to send');
+                console.error('Send failed:', e);
+                alert('Failed to send: ' + e.message);
             } finally {
+                btn.textContent = originalText;
                 btn.disabled = false;
             }
         }
