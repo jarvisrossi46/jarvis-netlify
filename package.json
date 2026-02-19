@@ -1,0 +1,9 @@
+{
+  "name": "jarvis-interface",
+  "version": "1.0.0",
+  "description": "Jarvis Interface - Netlify + Supabase chat system",
+  "private": true,
+  "dependencies": {
+    "@supabase/supabase-js": "^2.0.0"
+  }
+}
