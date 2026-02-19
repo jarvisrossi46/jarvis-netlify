@@ -1,568 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <title>Jarvis Interface</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html, body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #0d1117;
-            color: #c9d1d9;
-            height: 100vh;
-            height: -webkit-fill-available;
-            overflow: hidden;
-            position: fixed;
-            width: 100%;
-        }
-        #app {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            height: -webkit-fill-available;
-        }
-        .header {
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
-            padding: 10px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .header h1 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #58a6ff;
-        }
-        .user-badge {
-            background: #21262d;
-            border: 1px solid #30363d;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-        }
-        .agent-badge {
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 500;
-        }
-        .agent-badge.all { background: #8957e5; }
-        .agent-badge.vector { background: #a371f7; }
-        .agent-badge.staq { background: #3fb950; }
-        .logout-btn {
-            background: transparent;
-            border: 1px solid #30363d;
-            color: #8b949e;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 11px;
-        }
-        
-        .messages-container {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-            -webkit-overflow-scrolling: touch;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .message {
-            max-width: 85%;
-            padding: 10px 14px;
-            border-radius: 16px;
-            word-wrap: break-word;
-            font-size: 15px;
-            line-height: 1.4;
-        }
-        .message.incoming {
-            background: #21262d;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-        }
-        .message.outgoing {
-            background: #1f6feb;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-            color: white;
-        }
-        .message .sender {
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 3px;
-            opacity: 0.8;
-        }
-        .message .content { word-break: break-word; }
-        .message .attachment {
-            margin-top: 8px;
-            padding: 8px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-        }
-        .message .attachment img {
-            max-width: 200px;
-            max-height: 200px;
-            border-radius: 8px;
-        }
-        .message audio {
-            width: 100%;
-            max-width: 250px;
-            margin-top: 8px;
-        }
-        .message .time {
-            font-size: 10px;
-            opacity: 0.6;
-            margin-top: 4px;
-        }
-        
-        .input-area {
-            background: #161b22;
-            border-top: 1px solid #30363d;
-            padding: 10px 12px;
-            flex-shrink: 0;
-        }
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .input-btn {
-            background: #21262d;
-            border: none;
-            color: #8b949e;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-        .input-btn:active { background: #30363d; }
-        .input-btn.recording { 
-            background: #da3633; 
-            color: white;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        .input-area input[type="text"] {
-            flex: 1;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            color: #c9d1d9;
-            padding: 10px 14px;
-            border-radius: 20px;
-            font-size: 15px;
-            min-width: 0;
-        }
-        .input-area input:focus { outline: none; border-color: #58a6ff; }
-        .send-btn {
-            background: #238636;
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        .send-btn:disabled { background: #484f58; }
-        
-        .file-preview {
-            display: none;
-            background: #21262d;
-            padding: 8px 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            font-size: 13px;
-            align-items: center;
-            gap: 8px;
-        }
-        .file-preview.active { display: flex; }
-        .file-preview .remove-file {
-            margin-left: auto;
-            cursor: pointer;
-            color: #f85149;
-        }
-        
-        .recording-indicator {
-            display: none;
-            background: #da3633;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .recording-indicator.active { display: flex; }
-        .recording-indicator .dot {
-            width: 8px;
-            height: 8px;
-            background: white;
-            border-radius: 50%;
-            animation: blink 1s infinite;
-        }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #8b949e;
-        }
-        .empty-state h3 { color: #c9d1d9; margin-bottom: 8px; }
-        
-        #fileInput { display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jarvis</title>
+<style>
+body{margin:0;font-family:system-ui;background:#0d1117;color:#c9d1d9;height:100vh;display:flex;flex-direction:column}
+.header{background:#161b22;padding:10px 16px;border-bottom:1px solid #30363d;display:flex;justify-content:space-between;align-items:center}
+.header h1{margin:0;font-size:16px;color:#58a6ff}
+.user{font-size:12px;background:#21262d;padding:4px 10px;border-radius:10px}
+.messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:85%;padding:10px 14px;border-radius:16px;font-size:15px}
+.msg.in{background:#21262d;align-self:flex-start;border-bottom-left-radius:4px}
+.msg.out{background:#1f6feb;align-self:flex-end;border-bottom-right-radius:4px;color:#fff}
+.input{background:#161b22;border-top:1px solid #30363d;padding:10px;display:flex;gap:8px}
+.input input{flex:1;background:#0d1117;border:1px solid #30363d;color:#c9d1d9;padding:10px 14px;border-radius:20px;font-size:15px}
+.input button{background:#238636;border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer}
+</style>
 </head>
 <body>
-    <div id="app">
-        <div class="header">
-            <div class="header-left">
-                <h1>Jarvis</h1>
-                <span class="user-badge" id="userBadge">...</span>
-                <span class="agent-badge" id="agentBadge">...</span>
-            </div>
-            <button class="logout-btn" onclick="logout()">Exit</button>
-        </div>
-        
-        <div class="messages-container" id="messages">
-            <div class="empty-state">
-                <h3>Loading...</h3>
-            </div>
-        </div>
-        
-        <div class="input-area">
-            <div class="recording-indicator" id="recordingIndicator">
-                <span class="dot"></span>
-                <span>Recording...</span>
-                <span id="recordTime">0:00</span>
-            </div>
-            <div class="file-preview" id="filePreview">
-                <span id="fileName">file.txt</span>
-                <span class="remove-file" onclick="clearFile()">✕</span>
-            </div>
-            <div class="input-row">
-                <button class="input-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-                <input type="file" id="fileInput" onchange="handleFileSelect(event)">
-                <button class="input-btn" id="recordBtn" onmousedown="startRecording()" ontouchstart="startRecording()" onmouseup="stopRecording()" ontouchend="stopRecording()">🎤</button>
-                <input type="text" id="messageInput" placeholder="Message..." onkeypress="handleKeyPress(event)">
-                <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
-            </div>
-        </div>
-    </div>
+<div class="header"><h1>Jarvis</h1><span class="user" id="user">...</span><button onclick="logout()">Exit</button></div>
+<div class="messages" id="messages"></div>
+<div class="input"><input id="msg" placeholder="Message..." onkeypress="if(event.key==='Enter')send()"><button onclick="send()">➤</button></div>
+<script>
+const API='https://jarvis-bridge-arry.netlify.app/.netlify/functions';
+const user=sessionStorage.getItem('jarvis_user');
+if(!user)location.href='index.html';
+document.getElementById('user').textContent=user;
+let lastId=0;
 
-    <script>
-        const API_URL = 'https://jarvis-bridge-arry.netlify.app/.netlify/functions';
-        const currentUser = sessionStorage.getItem('jarvis_user');
-        const userAgent = sessionStorage.getItem('jarvis_agent');
-        
-        console.log('Auth check:', { currentUser, userAgent });
-        
-        if (!currentUser) {
-            console.log('Not logged in, redirecting...');
-            window.location.href = 'index.html';
-        }
-        
-        const AGENT_NAMES = {
-            'all': 'Staq & Vector',
-            'vector': 'Vector',
-            'staq': 'Staq'
-        };
-        
-        document.getElementById('userBadge').textContent = currentUser;
-        document.getElementById('userBadge').className = `user-badge ${currentUser}`;
-        document.getElementById('agentBadge').textContent = AGENT_NAMES[userAgent];
-        document.getElementById('agentBadge').className = `agent-badge ${userAgent}`;
-        
-        let lastId = 0;
-        let selectedFile = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-        let recordInterval = null;
-        let recordSeconds = 0;
-        
-        // Scroll to bottom on load
-        window.onload = () => {
-            const container = document.getElementById('messages');
-            container.scrollTop = container.scrollHeight;
-        };
-        
-        async function loadMessages() {
-            try {
-                console.log('Fetching messages since:', lastId);
-                const res = await fetch(`${API_URL}/messages?since=${lastId}&sender=${currentUser}`, {
-                    headers: { 'X-User': currentUser }
-                });
-                console.log('Response status:', res.status);
-                const messages = await res.json();
-                console.log('Messages received:', messages.length, messages);
-                
-                if (messages.length > 0) {
-                    console.log('Processing', messages.length, 'messages');
-                    const container = document.getElementById('messages');
-                    const wasAtBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 50;
-                    
-                    if (lastId === 0) container.innerHTML = '';
-                    
-                    messages.forEach(msg => {
-                        if (msg.id > lastId) lastId = msg.id;
-                        const div = document.createElement('div');
-                        div.className = `message ${msg.type === 'incoming' ? 'incoming' : 'outgoing'}`;
-                        
-                        const senderName = msg.sender === 'jarvis' ? 
-                            (userAgent === 'all' ? 'Jarvis' : userAgent === 'vector' ? 'Vector' : 'Staq') : 
-                            msg.sender;
-                        
-                        let contentHtml = `<div class="content">${escapeHtml(msg.content)}</div>`;
-                        
-                        // Handle attachments
-                        if (msg.attachment_url) {
-                            if (msg.attachment_type?.startsWith('image/')) {
-                                contentHtml += `<div class="attachment"><img src="${msg.attachment_url}" alt="image" onclick="window.open('${msg.attachment_url}')"></div>`;
-                            } else if (msg.attachment_type?.startsWith('audio/')) {
-                                contentHtml += `<audio controls src="${msg.attachment_url}"></audio>`;
-                            } else {
-                                contentHtml += `<div class="attachment">📎 ${msg.attachment_name}</div>`;
-                            }
-                        }
-                        
-                        div.innerHTML = `
-                            <div class="sender">${senderName}</div>
-                            ${contentHtml}
-                            <div class="time">${formatTime(msg.created_at)}</div>
-                        `;
-                        container.appendChild(div);
-                    });
-                    
-                    if (wasAtBottom) {
-                        container.scrollTop = container.scrollHeight;
-                    }
-                } else if (lastId === 0) {
-                    document.getElementById('messages').innerHTML = `
-                        <div class="empty-state">
-                            <h3>Welcome, ${currentUser}</h3>
-                            <p>Send a message, attachment, or voice note</p>
-                        </div>
-                    `;
-                }
-            } catch (e) {
-                console.error('Load failed:', e);
-            }
-        }
-        
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFile = file;
-                document.getElementById('fileName').textContent = file.name;
-                document.getElementById('filePreview').classList.add('active');
-            }
-        }
-        
-        function clearFile() {
-            selectedFile = null;
-            document.getElementById('fileInput').value = '';
-            document.getElementById('filePreview').classList.remove('active');
-        }
-        
-        async function startRecording() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                recordedChunks = [];
-                
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) recordedChunks.push(e.data);
-                };
-                
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-                    sendVoiceMessage(blob);
-                    stream.getTracks().forEach(t => t.stop());
-                };
-                
-                mediaRecorder.start();
-                document.getElementById('recordBtn').classList.add('recording');
-                document.getElementById('recordingIndicator').classList.add('active');
-                
-                recordSeconds = 0;
-                recordInterval = setInterval(() => {
-                    recordSeconds++;
-                    const mins = Math.floor(recordSeconds / 60);
-                    const secs = recordSeconds % 60;
-                    document.getElementById('recordTime').textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
-                }, 1000);
-            } catch (e) {
-                alert('Microphone access denied');
-            }
-        }
-        
-        function stopRecording() {
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-                clearInterval(recordInterval);
-                document.getElementById('recordBtn').classList.remove('recording');
-                document.getElementById('recordingIndicator').classList.remove('active');
-            }
-        }
-        
-        async function sendVoiceMessage(blob) {
-            const btn = document.getElementById('sendBtn');
-            btn.disabled = true;
-            
-            try {
-                // Convert blob to base64
-                const reader = new FileReader();
-                reader.readAsDataURL(blob);
-                reader.onloadend = async () => {
-                    const base64Audio = reader.result;
-                    
-                    await fetch(`${API_URL}/messages`, {
-                        method: 'POST',
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'X-User': currentUser
-                        },
-                        body: JSON.stringify({ 
-                            sender: currentUser, 
-                            content: '🎤 Voice message',
-                            agent: userAgent,
-                            attachment: base64Audio,
-                            attachment_name: 'voice.webm',
-                            attachment_type: 'audio/webm'
-                        })
-                    });
-                    loadMessages();
-                };
-            } catch (e) {
-                alert('Failed to send voice');
-            } finally {
-                btn.disabled = false;
-            }
-        }
-        
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const content = input.value.trim();
-            
-            if (!content && !selectedFile) return;
-            
-            const btn = document.getElementById('sendBtn');
-            const originalText = btn.textContent;
-            btn.textContent = '...';
-            btn.disabled = true;
-            
-            try {
-                console.log('Sending message:', content);
-                let attachmentData = null;
-                
-                if (selectedFile) {
-                    const reader = new FileReader();
-                    attachmentData = await new Promise((resolve) => {
-                        reader.onloadend = () => resolve(reader.result);
-                        reader.readAsDataURL(selectedFile);
-                    });
-                }
-                
-                const response = await fetch(`${API_URL}/messages`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'X-User': currentUser
-                    },
-                    body: JSON.stringify({ 
-                        sender: currentUser, 
-                        content: content || (selectedFile ? `📎 ${selectedFile.name}` : ''),
-                        agent: userAgent,
-                        attachment: attachmentData,
-                        attachment_name: selectedFile?.name,
-                        attachment_type: selectedFile?.type
-                    })
-                });
-                
-                console.log('Response status:', response.status);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Server error: ${response.status} - ${errorText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Message sent:', data);
-                
-                input.value = '';
-                clearFile();
-                await loadMessages();
-                
-            } catch (e) {
-                console.error('Send failed:', e);
-                alert('Failed to send: ' + e.message);
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
-            }
-        }
-        
-        function handleKeyPress(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        }
-        
-        function logout() {
-            sessionStorage.clear();
-            window.location.href = 'index.html';
-        }
-        
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-        
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-        }
-        
-        // Prevent scroll bounce on iOS
-        document.getElementById('messages').addEventListener('touchmove', (e) => {
-            const el = e.currentTarget;
-            if (el.scrollTop <= 0 && e.touches[0].clientY > el.getBoundingClientRect().top + 50) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-        
-        loadMessages();
-        setInterval(loadMessages, 3000);
-    </script>
+async function load(){
+  const r=await fetch(`${API}/messages?since=${lastId}`,{headers:{'X-User':user}});
+  const msgs=await r.json();
+  if(msgs.length){
+    const b=document.getElementById('messages');
+    msgs.forEach(m=>{
+      if(m.id>lastId)lastId=m.id;
+      const d=document.createElement('div');
+      d.className='msg '+(m.sender===user?'out':'in');
+      d.textContent=m.content;
+      b.appendChild(d);
+    });
+    b.scrollTop=b.scrollHeight;
+  }
+}
+
+async function send(){
+  const i=document.getElementById('msg');
+  const t=i.value.trim();
+  if(!t)return;
+  i.value='';
+  await fetch(`${API}/messages`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-User':user},
+    body:JSON.stringify({sender:user,content:t})
+  });
+  load();
+}
+
+function logout(){sessionStorage.clear();location.href='index.html';}
+
+load();
+setInterval(load,3000);
+</script>
 </body>
 </html>
