@@ -32,10 +32,11 @@ exports.handler = async (event, context) => {
     if (event.httpMethod === 'GET') {
         const since = parseInt(event.queryStringParameters?.since) || 0;
         
+        // Get messages sent by user OR responses sent to user
         const { data, error } = await supabase
             .from('messages')
             .select('*')
-            .or(`sender.eq.${user},and(sender.eq.jarvis,recipient.eq.${user})`)
+            .or(`sender.eq.${user},recipient.eq.${user}`)
             .gt('id', since)
             .order('id', { ascending: true });
         
