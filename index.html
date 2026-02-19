@@ -3,495 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jarvis Interface</title>
+    <title>Jarvis Interface - Login</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0d1117;
             color: #c9d1d9;
             height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-
-        .header {
+        .login-box {
             background: #161b22;
-            border-bottom: 1px solid #30363d;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
         }
-
-        .header h1 {
-            font-size: 18px;
-            font-weight: 600;
+        .login-box h1 {
             color: #58a6ff;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 24px;
         }
-
-        .header h1::before {
-            content: "◉";
-            color: #3fb950;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .sender-selector {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .sender-selector label {
-            font-size: 13px;
+        .login-box p {
             color: #8b949e;
+            margin-bottom: 24px;
         }
-
-        .sender-selector select {
+        .user-grid {
+            display: grid;
+            gap: 12px;
+        }
+        .user-btn {
             background: #21262d;
             border: 1px solid #30363d;
             color: #c9d1d9;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
+            padding: 16px;
+            border-radius: 8px;
             cursor: pointer;
-        }
-
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
+            transition: all 0.2s;
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 12px;
         }
-
-        .message {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            line-height: 1.5;
-            animation: fadeIn 0.3s ease;
+        .user-btn:hover {
+            background: #30363d;
+            border-color: #58a6ff;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .user-btn .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
         }
-
-        .message.incoming {
-            align-self: flex-start;
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-bottom-left-radius: 4px;
+        .user-btn.arry .avatar { background: #58a6ff; color: #0d1117; }
+        .user-btn.ashwin .avatar { background: #a371f7; color: #0d1117; }
+        .user-btn.nakul .avatar { background: #3fb950; color: #0d1117; }
+        .user-btn .info {
+            text-align: left;
+            flex: 1;
         }
-
-        .message.outgoing {
-            align-self: flex-end;
-            background: #1f6feb;
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message-header {
-            font-size: 11px;
+        .user-btn .name {
             font-weight: 600;
-            margin-bottom: 4px;
-            opacity: 0.8;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            font-size: 16px;
         }
-
-        .message-time {
-            font-size: 10px;
-            opacity: 0.6;
-            margin-top: 6px;
+        .user-btn .role {
+            font-size: 12px;
+            color: #8b949e;
         }
-
-        .input-container {
-            background: #161b22;
-            border-top: 1px solid #30363d;
-            padding: 16px 20px;
+        .password-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .password-modal.active {
             display: flex;
-            gap: 12px;
         }
-
-        .input-container input {
-            flex: 1;
+        .password-box {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 350px;
+        }
+        .password-box h2 {
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        .password-box input {
+            width: 100%;
             background: #0d1117;
             border: 1px solid #30363d;
             color: #c9d1d9;
-            padding: 12px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.2s;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 16px;
         }
-
-        .input-container input:focus {
-            border-color: #58a6ff;
-        }
-
-        .input-container input::placeholder {
-            color: #484f58;
-        }
-
-        .input-container button {
+        .password-box button {
+            width: 100%;
             background: #238636;
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
             cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
         }
-
-        .input-container button:hover {
+        .password-box button:hover {
             background: #2ea043;
         }
-
-        .input-container button:disabled {
-            background: #484f58;
-            cursor: not-allowed;
-        }
-
-        .status-bar {
-            background: #161b22;
-            padding: 8px 20px;
-            font-size: 12px;
-            color: #8b949e;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #21262d;
-        }
-
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #3fb950;
-        }
-
-        .status-dot.offline {
-            background: #f85149;
-        }
-
-        .status-dot.connecting {
-            background: #f0883e;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8b949e;
-        }
-
-        .empty-state h3 {
-            font-size: 16px;
-            margin-bottom: 8px;
-            color: #c9d1d9;
-        }
-
-        .typing-indicator {
-            display: none;
-            align-self: flex-start;
-            background: #21262d;
-            padding: 16px 20px;
-            border-radius: 12px;
-            border-bottom-left-radius: 4px;
-        }
-
-        .typing-indicator.visible {
-            display: flex;
-            gap: 4px;
-        }
-
-        .typing-indicator span {
-            width: 6px;
-            height: 6px;
-            background: #8b949e;
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-8px); }
-        }
-
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 16px;
-            }
-            
-            .message {
-                max-width: 90%;
-            }
-            
-            .input-container {
-                padding: 12px;
-            }
+        .password-box .error {
+            color: #f85149;
+            font-size: 14px;
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="login-box">
         <h1>Jarvis Interface</h1>
-        <div class="sender-selector">
-            <label>From:</label>
-            <select id="sender">
-                <option value="ashwin">Ashwin</option>
-                <option value="nakul">Nakul</option>
-                <option value="arry">Arry</option>
-            </select>
+        <p>Select user to continue</p>
+        <div class="user-grid">
+            <button class="user-btn arry" onclick="showPassword('arry')">
+                <div class="avatar">A</div>
+                <div class="info">
+                    <div class="name">Arry</div>
+                    <div class="role">Admin • Full Access</div>
+                </div>
+            </button>
+            <button class="user-btn ashwin" onclick="showPassword('ashwin')">
+                <div class="avatar">As</div>
+                <div class="info">
+                    <div class="name">Ashwin</div>
+                    <div class="role">Vector Agent • Infrastructure</div>
+                </div>
+            </button>
+            <button class="user-btn nakul" onclick="showPassword('nakul')">
+                <div class="avatar">N</div>
+                <div class="info">
+                    <div class="name">Nakul</div>
+                    <div class="role">Staq Agent • Business Solutions</div>
+                </div>
+            </button>
         </div>
     </div>
 
-    <div class="chat-container" id="chat">
-        <div class="empty-state">
-            <h3>Welcome to Jarvis Interface</h3>
-            <p>Send a message to connect with Arry</p>
+    <div class="password-modal" id="passwordModal">
+        <div class="password-box">
+            <h2 id="modalTitle">Enter Password</h2>
+            <input type="password" id="passwordInput" placeholder="Password" autofocus>
+            <button onclick="login()">Login</button>
+            <div class="error" id="errorMsg"></div>
         </div>
-    </div>
-
-    <div class="typing-indicator" id="typing">
-        <span></span>
-        <span></span>
-        <span></span>
-    </div>
-
-    <div class="input-container">
-        <input type="text" id="messageInput" placeholder="Type your message..." maxlength="1000">
-        <button id="sendBtn" onclick="sendMessage()">
-            <span>Send</span>
-            <span>→</span>
-        </button>
-    </div>
-
-    <div class="status-bar">
-        <div class="status">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusText">Connecting...</span>
-        </div>
-        <span id="lastUpdate">Waiting for messages...</span>
     </div>
 
     <script>
-        const API_URL = '/.netlify/functions/messages';
-        const POLL_INTERVAL = 3000; // 3 seconds
-        
-        let lastMessageId = 0;
-        let isPolling = true;
-        let pollInterval;
+        const API_URL = 'https://jarvis-bridge-arry.netlify.app/.netlify/functions';
+        let selectedUser = null;
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            loadMessages();
-            startPolling();
+        // Passwords (in production, these would be hashed server-side)
+        const PASSWORDS = {
+            'arry': 'arry123',
+            'ashwin': 'ashwin123',
+            'nakul': 'nakul123'
+        };
+
+        // Agent routing
+        const AGENT_ROUTING = {
+            'arry': 'all',        // Can access both Staq and Vector
+            'ashwin': 'vector',   // Only Vector (infrastructure)
+            'nakul': 'staq'       // Only Staq (business solutions)
+        };
+
+        function showPassword(user) {
+            selectedUser = user;
+            document.getElementById('modalTitle').textContent = `Login as ${user.charAt(0).toUpperCase() + user.slice(1)}`;
+            document.getElementById('passwordModal').classList.add('active');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('errorMsg').textContent = '';
+            setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+        }
+
+        async function login() {
+            const password = document.getElementById('passwordInput').value;
             
-            // Enter key to send
-            document.getElementById('messageInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
+            if (password !== PASSWORDS[selectedUser]) {
+                document.getElementById('errorMsg').textContent = 'Invalid password';
+                return;
+            }
+
+            // Store auth in session
+            sessionStorage.setItem('jarvis_user', selectedUser);
+            sessionStorage.setItem('jarvis_agent', AGENT_ROUTING[selectedUser]);
+            
+            // Redirect to chat
+            window.location.href = 'chat.html';
+        }
+
+        // Close modal on outside click
+        document.getElementById('passwordModal').addEventListener('click', (e) => {
+            if (e.target.id === 'passwordModal') {
+                document.getElementById('passwordModal').classList.remove('active');
+            }
         });
 
-        function startPolling() {
-            pollInterval = setInterval(pollMessages, POLL_INTERVAL);
-        }
-
-        async function loadMessages() {
-            try {
-                updateStatus('connecting');
-                const response = await fetch(`${API_URL}?since=0`);
-                
-                if (!response.ok) throw new Error('Failed to load messages');
-                
-                const messages = await response.json();
-                const chat = document.getElementById('chat');
-                
-                // Clear and rebuild chat
-                chat.innerHTML = '';
-                
-                if (messages.length === 0) {
-                    chat.innerHTML = `
-                        <div class="empty-state">
-                            <h3>Welcome to Jarvis Interface</h3>
-                            <p>Send a message to connect with Arry</p>
-                        </div>
-                    `;
-                } else {
-                    messages.forEach(msg => displayMessage(msg));
-                    lastMessageId = messages[messages.length - 1].id;
-                }
-                
-                updateStatus('online');
-                updateLastUpdate();
-            } catch (error) {
-                console.error('Error loading messages:', error);
-                updateStatus('offline');
-            }
-        }
-
-        async function pollMessages() {
-            if (!isPolling) return;
-            
-            try {
-                const response = await fetch(`${API_URL}?since=${lastMessageId}`);
-                
-                if (!response.ok) throw new Error('Poll failed');
-                
-                const messages = await response.json();
-                
-                if (messages.length > 0) {
-                    // Remove empty state if present
-                    const chat = document.getElementById('chat');
-                    if (chat.querySelector('.empty-state')) {
-                        chat.innerHTML = '';
-                    }
-                    
-                    messages.forEach(msg => {
-                        displayMessage(msg);
-                        lastMessageId = msg.id;
-                    });
-                    
-                    updateLastUpdate();
-                }
-                
-                updateStatus('online');
-            } catch (error) {
-                console.error('Polling error:', error);
-                updateStatus('offline');
-            }
-        }
-
-        function displayMessage(msg) {
-            const chat = document.getElementById('chat');
-            const messageEl = document.createElement('div');
-            messageEl.className = `message ${msg.type}`;
-            
-            const time = new Date(msg.created_at).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            messageEl.innerHTML = `
-                <div class="message-header">${escapeHtml(msg.sender)}</div>
-                <div>${escapeHtml(msg.content)}</div>
-                <div class="message-time">${time}</div>
-            `;
-            
-            chat.appendChild(messageEl);
-            chat.scrollTop = chat.scrollHeight;
-        }
-
-        async function sendMessage() {
-            const input = document.getElementById('messageInput');
-            const sender = document.getElementById('sender').value;
-            const content = input.value.trim();
-            
-            if (!content) return;
-            
-            const sendBtn = document.getElementById('sendBtn');
-            sendBtn.disabled = true;
-            
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ sender, content })
-                });
-                
-                if (!response.ok) throw new Error('Failed to send');
-                
-                const data = await response.json();
-                displayMessage(data);
-                lastMessageId = data.id;
-                
-                input.value = '';
-                updateLastUpdate();
-                
-                // Remove empty state
-                const chat = document.getElementById('chat');
-                if (chat.querySelector('.empty-state')) {
-                    chat.querySelector('.empty-state').remove();
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                alert('Failed to send message. Please try again.');
-            } finally {
-                sendBtn.disabled = false;
-            }
-        }
-
-        function updateStatus(status) {
-            const dot = document.getElementById('statusDot');
-            const text = document.getElementById('statusText');
-            
-            dot.className = 'status-dot ' + status;
-            
-            switch(status) {
-                case 'online':
-                    text.textContent = 'Connected';
-                    break;
-                case 'offline':
-                    text.textContent = 'Disconnected';
-                    break;
-                case 'connecting':
-                    text.textContent = 'Connecting...';
-                    break;
-            }
-        }
-
-        function updateLastUpdate() {
-            const now = new Date();
-            document.getElementById('lastUpdate').textContent = 
-                'Last update: ' + now.toLocaleTimeString();
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', () => {
-            clearInterval(pollInterval);
+        // Enter key to submit
+        document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') login();
         });
     </script>
 </body>

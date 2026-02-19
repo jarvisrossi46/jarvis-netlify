@@ -1,6 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Embedded credentials
 const SUPABASE_URL = 'https://yavgjvbcfhzcvbvktvkw.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhdmdqdmJjZmh6Y3Zidmt0dmt3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTQ3ODkzNiwiZXhwIjoyMDg3MDU0OTM2fQ.Zy9T-l-C0Ao1_leEz2Sx6uqi22gJnvzohcf8SYl70Qk';
 
@@ -9,7 +8,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 exports.handler = async (event, context) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, X-User',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
@@ -18,13 +17,18 @@ exports.handler = async (event, context) => {
     }
 
     if (event.httpMethod === 'POST') {
-        // Receive response from Jarvis
         const body = JSON.parse(event.body);
-        const { sender, content } = body;
+        const { sender, content, recipient } = body;
         
+        // Store response with recipient for siloing
         const { data, error } = await supabase
             .from('messages')
-            .insert([{ sender: sender || 'jarvis', content, type: 'outgoing' }])
+            .insert([{ 
+                sender: sender || 'jarvis', 
+                content, 
+                type: 'outgoing',
+                recipient: recipient || 'arry'  // Default to arry if not specified
+            }])
             .select()
             .single();
         
