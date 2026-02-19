@@ -4,6 +4,6 @@
   "description": "Jarvis Interface - Netlify + Supabase chat system",
   "private": true,
   "dependencies": {
-    "@supabase/supabase-js": "^2.0.0"
+    "@supabase/supabase-js": "^2.97.0"
   }
 }
