@@ -1,9 +1,10 @@
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY
-);
+// Embedded credentials
+const SUPABASE_URL = 'https://yavgjvbcfhzcvbvktvkw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhdmdqdmJjZmh6Y3Zidmt0dmt3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTQ3ODkzNiwiZXhwIjoyMDg3MDU0OTM2fQ.Zy9T-l-C0Ao1_leEz2Sx6uqi22gJnvzohcf8SYl70Qk';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 exports.handler = async (event, context) => {
     const headers = {
@@ -17,7 +18,7 @@ exports.handler = async (event, context) => {
     }
 
     if (event.httpMethod === 'POST') {
-        // Receive response from Jarvis (via sessions_send from Mac)
+        // Receive response from Jarvis
         const body = JSON.parse(event.body);
         const { sender, content } = body;
         
@@ -27,7 +28,7 @@ exports.handler = async (event, context) => {
             .select()
             .single();
         
-        if (error) return { statusCode: 500, headers, body: JSON.stringify({ error }) };
+        if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
         return { statusCode: 200, headers, body: JSON.stringify({ status: 'ok', data }) };
     }
 

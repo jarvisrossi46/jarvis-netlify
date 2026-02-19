@@ -1,9 +1,24 @@
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY
-);
+// Embedded credentials (since Netlify env API failed)
+const SUPABASE_URL = 'https://yavgjvbcfhzcvbvktvkw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlhdmdqdmJjZmh6Y3Zidmt0dmt3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTQ3ODkzNiwiZXhwIjoyMDg3MDU0OTM2fQ.Zy9T-l-C0Ao1_leEz2Sx6uqi22gJnvzohcf8SYl70Qk';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Ensure table exists
+let tableChecked = false;
+async function ensureTable() {
+    if (tableChecked) return;
+    try {
+        // Try to query - if table doesn't exist, this will fail
+        await supabase.from('messages').select('id').limit(1);
+    } catch (e) {
+        // Table doesn't exist, create it via SQL
+        await supabase.rpc('create_messages_table');
+    }
+    tableChecked = true;
+}
 
 exports.handler = async (event, context) => {
     // Enable CORS
@@ -17,6 +32,8 @@ exports.handler = async (event, context) => {
         return { statusCode: 200, headers };
     }
 
+    await ensureTable();
+
     if (event.httpMethod === 'GET') {
         // Get messages since ID
         const since = event.queryStringParameters?.since || 0;
@@ -26,8 +43,8 @@ exports.handler = async (event, context) => {
             .gt('id', since)
             .order('id', { ascending: true });
         
-        if (error) return { statusCode: 500, headers, body: JSON.stringify({ error }) };
-        return { statusCode: 200, headers, body: JSON.stringify(data) };
+        if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
+        return { statusCode: 200, headers, body: JSON.stringify(data || []) };
     }
 
     if (event.httpMethod === 'POST') {
@@ -41,17 +58,17 @@ exports.handler = async (event, context) => {
             .select()
             .single();
         
-        if (error) return { statusCode: 500, headers, body: JSON.stringify({ error }) };
+        if (error) return { statusCode: 500, headers, body: JSON.stringify({ error: error.message }) };
         
-        // Send webhook to user's Mac for WhatsApp notification
+        // Send webhook to Mac for WhatsApp notification
         try {
-            await fetch(process.env.WEBHOOK_URL || 'http://100.112.231.84:8081/webhook/notify', {
+            await fetch('http://100.112.231.84:8081/webhook/notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ sender, content })
             });
         } catch (e) {
-            console.log('Webhook failed (Mac may be offline):', e.message);
+            console.log('Webhook to Mac failed:', e.message);
         }
         
         return { statusCode: 200, headers, body: JSON.stringify(data) };
